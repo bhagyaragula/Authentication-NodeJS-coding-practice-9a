@@ -43,12 +43,12 @@ app.post("/register", async (request, response) => {
     const createUserQuery = `
       INSERT INTO 
       user (username, name, password, gender, location)
-      VALUES
+      VALUES (
         '${username}',
         '${name}',
         '${hashedPassword}',
         '${gender}',
-        '${location}';`;
+        '${location}');`;
     if (validPassword(password)) {
       await db.run(createUserQuery);
       response.status(200);
