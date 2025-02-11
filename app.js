@@ -28,34 +28,33 @@ const initializeDBAndServer = async () => {
 
 initializeDBAndServer();
 
-const validPassword = (password) => {
-  return password.length > 4;
+const validPhonenumber = (phonenumber) => {
+  return phonenumber.length < 10;
 };
 
 app.post("/register", async (request, response) => {
-  const { username, name, password, gender, location } = request.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const { name, email, phonenumber, address } = request.body;
+  const hashedPhonenumber = await bcrypt.hash(phonenumber, 10);
 
   const selectUserQuery = `
-    SELECT * FROM user WHERE username = '${username}';`;
+    SELECT * FROM user WHERE name = '${name}';`;
   const dbUser = await db.get(selectUserQuery);
   if (dbUser === undefined) {
     const createUserQuery = `
       INSERT INTO 
-      user (username, name, password, gender, location)
+      user (name, email, phonenumber, address)
       VALUES (
-        '${username}',
         '${name}',
-        '${hashedPassword}',
-        '${gender}',
-        '${location}');`;
-    if (validPassword(password)) {
+        '${email}',
+        '${hashedPhonenumber}',
+        '${address}');`;
+    if (validPhonenumner(phonenumner)) {
       await db.run(createUserQuery);
       response.status(200);
       response.send("User created successfully");
     } else {
       response.status(400);
-      response.send("Password is too short");
+      response.send("Phonenumber is too short");
     }
   } else {
     response.status(400);
@@ -64,54 +63,54 @@ app.post("/register", async (request, response) => {
 });
 
 app.post("/login", async (request, response) => {
-  const { username, password } = request.body;
+  const { name, phonenumber } = request.body;
 
   const selectUserQuery = `
-    SELECT * FROM user WHERE username='${username}';`;
+    SELECT * FROM user WHERE name='${name}';`;
   const dbUser = await db.get(selectUserQuery);
 
   if (dbUser === undefined) {
     response.status(400);
     response.send("Invalid user");
   } else {
-    const isPasswordMatched = await bcrypt.compare(password, dbUser.password);
-    if (isPasswordMatched === true) {
+    const isPhonenumberMatched = await bcrypt.compare(phonenumber, dbUser.phonenumber);
+    if (isPhonenumberdMatched === true) {
       response.status(200);
       response.send("Login success!");
     } else {
       response.status(400);
-      response.send("Invalid password");
+      response.send("Invalid phone number");
     }
   }
 });
 
-app.put("/change-password", async (request, response) => {
-  const { username, oldPassword, newPassword } = request.body;
+app.put("/change-phonenumber", async (request, response) => {
+  const { username, oldPhonenumber, newPhonenumber } = request.body;
   const checkUserQuery = `
-    SELECT * FROM user WHERE username='${username}';`;
+    SELECT * FROM user WHERE name='${name}';`;
   const dbUser = await db.get(checkUserQuery);
 
   if (dbUser === undefined) {
     response.status(400);
     response.send("User not Registered");
   } else {
-    const isValidPassword = await bcrypt.compare(oldPassword, dbUser.password);
-    if (isValidPassword === true) {
-      const lengthOfPassword = newPassword.length;
-      if (lengthOfPassword < 5) {
+    const isValidPassword = await bcrypt.compare(oldPhonenumber, dbUser.phonenumber);
+    if (isValidPhonenumber === true) {
+      const lengthOfPhonenumber = newPhonenumber.length;
+      if (lengthOfPhonenumber < 10) {
         response.status(400);
-        response.send("Password is too short");
+        response.send("Phone number is too short");
       } else {
-        const encryptPassword = await bcrypt.hash(newPassword, 10);
+        const encryptPhonenumber = await bcrypt.hash(newPhonenumber, 10);
         const updateUserQuery = `
-                UPDATE user set password='${encryptPassword}'
-                WHERE username = '${username}';`;
+                UPDATE user set phonenumber='${encryptPhonenumber}'
+                WHERE name = '${name}';`;
         await db.run(updateUserQuery);
-        response.send("Password updated");
+        response.send("Phone number updated");
       }
     } else {
       response.status(400);
-      response.send("Invalid current password");
+      response.send("Invalid current phone number");
     }
   }
 });
